@@ -34,11 +34,18 @@ class SQL_user:
         return count > 0
     
     def is_authentificate(self, email, password):
-        query = text('SELECT COUNT(*) FROM "user" WHERE email = :email and password = :password')
+        query = text('SELECT user_id, COUNT(*) FROM "user" WHERE email = :email AND password = :password GROUP BY user_id')
         with self.engine.connect() as connection:
             result = connection.execute(query, {'email': email, 'password': password})
-            count = result.scalar()
-        return count > 0
+            data = result.fetchall()
+        
+        if data:
+            identification = pd.DataFrame(data, columns=['user_id', 'count'])
+            user_id = identification['user_id'].iloc[0]
+            count = identification['count'].iloc[0]
+            return count > 0, user_id
+        else:
+            return False, None
 
     @staticmethod
     def is_valid_email(email):
