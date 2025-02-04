@@ -1,10 +1,10 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 import json
-from checker import Checker
+from SQL_user import SQL_user
 
 
-checker = Checker()
+sql_user = SQL_user()
 
 # Vérifier si l'utilisateur est connecté avant de configurer la mise en page
 if "authenticated" in st.session_state and st.session_state["authenticated"]:
@@ -55,11 +55,11 @@ def show_signup_form():
         submit = st.form_submit_button("Valider")
 
     if submit:
-        if checker.is_email_known(email):
+        if sql_user.is_email_known(email):
             st.warning("Un compte avec cet email existe déjà !")
         else:
-            if checker.validate_user(email, password, name, lastname):
-                checker.add_user(email, password, name, lastname)
+            if sql_user.validate_user(email, password, name, lastname):
+                sql_user.add_user(email, password, name, lastname)
                 st.success("Compte créé avec succès ! Vous pouvez maintenant vous connecter.")
                 st.session_state["current_page"] = "Login"
 
@@ -73,7 +73,7 @@ def show_login_form():
 
         if submit:
             # Vérifier les informations d'identification
-            if checker.is_authentificate(email, password):
+            if sql_user.is_authentificate(email, password):
                 st.session_state["authenticated"] = True
                 st.session_state["current_user"] = email
                 st.session_state["current_page"] = "Accueil"
