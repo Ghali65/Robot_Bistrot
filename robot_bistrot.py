@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import json
 from SQL_user import SQL_user
+from chat import chatbot
 
 
 sql_user = SQL_user()
@@ -18,11 +19,13 @@ def main():
         st.session_state["authenticated"] = False
         st.session_state["current_user"] = None
         st.session_state["current_page"] = "Landing"  # Page par défaut au démarrage
+    if "user_id" not in st.session_state:
+        st.session_state["user_id"] = None
 
     # Afficher la page actuelle
     if st.session_state["authenticated"]:
         if st.session_state["current_page"] == "Accueil":
-            show_home_page()
+            chatbot()
         elif st.session_state["current_page"] == "Compte":
             show_account_page()
     else:
@@ -40,9 +43,11 @@ def show_landing_page():
     with col1:
         if st.button("Créer un compte", use_container_width=True):
             st.session_state["current_page"] = "Signup"
+            st.rerun()
     with col2:
         if st.button("Se connecter", use_container_width=True):
             st.session_state["current_page"] = "Login"
+            st.rerun()
 
 def show_signup_form():
     st.title("Créer un compte")
@@ -77,29 +82,10 @@ def show_login_form():
                 st.session_state["authenticated"] = True
                 st.session_state["current_user"] = email
                 st.session_state["current_page"] = "Accueil"
+                st.session_state["user_id"]= sql_user.is_authentificate(email, password)
             else:
                 st.error("Email ou mot de passe incorrect !")
 
-def show_home_page():
-    # Menu de navigation horizontal
-    selected_option = option_menu(
-    None,
-    options=["Recherche", "historique", "Compte", "Déconnexion"],
-    orientation="horizontal",
-    default_index=0,
-)
-
-    if selected_option == "Recherche":
-        st.title("Bienvenue sur Think'n'Find")
-        st.image("logo.png")
-    elif selected_option == "historique":
-        st.title("Historique")
-    elif selected_option == "Compte":
-        st.session_state["current_page"] = "Compte"
-    elif selected_option == "Déconnexion":
-        st.session_state["authenticated"] = False
-        st.session_state["current_user"] = None
-        st.session_state["current_page"] = "Landing"
 
 def show_account_page():
     email = st.session_state["current_user"]
